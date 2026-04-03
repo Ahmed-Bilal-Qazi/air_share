@@ -1,49 +1,50 @@
 # AirShare
 
-A lightweight, local network file-sharing tool built with Flask. It lets you transfer files between devices on the same WiFi—no accounts, no cloud, no setup beyond running a single script.
+A lightweight, self-hosted file sharing app for local networks. Open it in a browser, scan a QR code or enter a PIN, and start transferring files instantly between devices.
 
-It works by spinning up a small web server on your machine and exposing a simple interface accessible via browser. A QR code makes connecting from phones effortless.
+No accounts. No cloud. Just direct sharing over LAN.
 
 ---
 
 ## Features
 
-* Instant file sharing over local network
-* Drag-and-drop upload interface
-* QR code for quick mobile access
+* QR-based instant access
+* PIN authentication for controlled entry
+* Chunked uploads (handles large files reliably)
+* Resume-friendly transfers
+* Drag-and-drop interface
+* Multi-file upload support
+* Bulk download and delete
+* Local file storage
 * No external dependencies beyond Python packages
-* Supports large files (up to 4 GB)
-* Download and delete files from any connected device
-* Clean, minimal UI with real-time updates
 
 ---
 
 ## How It Works
 
-* The server runs on your machine (port `5000`)
-* It detects your local IP address
-* Other devices on the same WiFi can connect via browser
-* Files are stored locally in a `shared_files/` directory
+AirShare runs a local Flask server and exposes a simple web interface.
 
-No data ever leaves your network.
+* The server generates:
+
+  * a **local URL**
+  * a **temporary PIN**
+  * a **QR code for auto-authentication**
+
+* Clients connect via browser:
+
+  * Scan QR → instantly logged in
+  * Enter PIN → session created
+
+* Files are uploaded in chunks and reassembled server-side.
+
+* All data stays on the host machine.
 
 ---
 
 ## Requirements
 
 * Python 3.8+
-* pip
-
----
-
-## Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/Ahmed-Bilal-Qazi/airshare.git
-cd airshare
-```
+* Same network for all devices
 
 Install dependencies:
 
@@ -53,44 +54,41 @@ pip install flask qrcode
 
 ---
 
-## Usage
-
-Run the app:
+## Run the App
 
 ```bash
-python app.py
+python app_version_2.py
 ```
 
-You’ll see output like:
+On startup, you’ll see:
 
-```
-AirShare is running
-Open this on any device on the same WiFi:
+* Local URL (e.g. `http://192.168.x.x:5000`)
+* 6-digit PIN
 
-http://192.168.x.x:5000
-```
-
-Open that URL in your browser or scan the QR code.
+Open the URL in any device on the same network.
 
 ---
 
-## Interface Overview
+## Usage
 
-* **QR Code Panel**
+### Connect
 
-  * Scan with phone to connect instantly
-  * Tap-to-copy URL
+* Scan the QR code (auto login), or
+* Enter the PIN manually
 
-* **Upload Area**
+### Upload Files
 
-  * Drag & drop files or click to select
-  * Upload progress bar included
+* Drag & drop files into the upload area
+* Or click to select files
 
-* **Shared Files List**
+Uploads are chunked automatically.
 
-  * View all uploaded files
-  * Download or delete any file
-  * Auto-refresh every 5 seconds
+### Manage Files
+
+* Download individual files
+* Select multiple files for bulk actions
+* Delete files directly from the UI
+* Reorder files via drag-and-drop (stored locally in browser)
 
 ---
 
@@ -98,112 +96,63 @@ Open that URL in your browser or scan the QR code.
 
 ```
 .
-├── app.py            # Main application
-├── shared_files/     # Uploaded files (auto-created)
+├── app_version_2.py     # Main application
+├── shared_files/        # Stored uploaded files
+└── .chunks/             # Temporary chunk storage
 ```
-
----
-
-## API Endpoints
-
-* `GET /`
-  Serves the main UI
-
-* `POST /upload`
-  Upload one or more files
-
-* `GET /files`
-  Returns list of shared files
-
-* `GET /download/<filename>`
-  Downloads a file
-
-* `DELETE /delete/<filename>`
-  Deletes a file
 
 ---
 
 ## Configuration
 
-Inside `app.py`:
+Inside the script:
 
 ```python
 PORT = 5000
+SESSION_TTL = 8 * 3600
+CHUNK_SIZE_HINT = 5 * 1024 * 1024
 ```
 
-You can change the port if needed.
+You can adjust:
 
-Max file size:
-
-```python
-app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024 * 1024  # 4 GB
-```
+* Port
+* Session duration
+* Chunk size (client hint)
 
 ---
 
-## Firewall Notes
+## Security Notes
 
-If other devices can’t connect, your firewall may be blocking access.
+* Sessions expire automatically (default: 8 hours)
+* PIN resets on every server restart
+* Files are only accessible within the network
+* Filenames are sanitized before saving
 
-### Windows (run as admin)
-
-```bash
-netsh advfirewall firewall add rule name=AirShare dir=in action=allow protocol=TCP localport=5000
-```
-
-### Linux
-
-```bash
-sudo ufw allow 5000
-```
-
-### macOS
-
-Allow Python in:
-
-```
-System Settings → Network → Firewall
-```
+This is designed for trusted local environments, not public exposure.
 
 ---
 
 ## Limitations
 
-* Works only on the same local network
-* No authentication or encryption
-* Files are publicly accessible to anyone on the network
-* No resumable uploads
-
----
-
-## Security Considerations
-
-This tool is intentionally simple. Use it only on trusted networks.
-
-If you need more control, consider adding:
-
-* password protection
-* HTTPS support
-* file expiration logic
+* No encryption beyond local network transport
+* No user accounts or permissions system
+* Not optimized for WAN or internet-facing use
+* Files persist until manually deleted
 
 ---
 
 ## Possible Improvements
 
-* Upload resume support
-* File previews (images, videos)
-* Progress indicators for downloads
-* Multi-user session awareness
-* Optional authentication layer
+* HTTPS support
+* File previews
+* Upload progress persistence
+* User roles or access control
+* Expiring file links
 
 ---
 
 ## License
 
-MIT License (or update as needed)
+MIT License (or add your preferred license)
 
 ---
-
-## Summary
-
-AirShare is built for one thing: quick, frictionless file transfer between devices nearby. No login screens, no pairing, no cloud delays—just open, upload, and download.
