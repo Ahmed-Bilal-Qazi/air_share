@@ -195,7 +195,3 @@ Or use the provided `build_exe.bat` if it's included in the repo — double-clic
 > **Antivirus note:** PyInstaller executables sometimes trigger Windows Defender as a false positive. This is a known issue with PyInstaller-bundled apps. Add an exception if needed.
 
 ---
-
-## License
-
-MIT License
